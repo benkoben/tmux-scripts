@@ -1,0 +1,47 @@
+#!/bin/zsh                                                                                                   
+
+# This is an ongoing script
+
+SESSIONNAME="chat-project-development"
+LLM="deepseek-coder-v2:latest"
+tmux has-session -t $SESSIONNAME &> /dev/null
+
+if [ $? != 0 ] 
+ then
+    # Create a new session with a window named code
+    tmux new-session -s $SESSIONNAME -n "code" -d
+
+    # Set the left pane to move into chat-application
+    tmux select-pane -t $SESSIONNAME:0.0
+    tmux send-keys -t $SESSIONNAME "cd ~/Documents/chat-application" C-m 
+    tmux send-keys -t $SESSIONNAME "nvim ." C-m 
+    
+    # Split the window vertically
+    tmux split-window -h
+    
+    # Set the right pane to move into chat-client
+    tmux select-pane -t $SESSIONNAME:0.1
+    tmux send-keys -t $SESSIONNAME "cd ~/Documents/chat-client" C-m 
+    tmux send-keys -t $SESSIONNAME "nvim ." C-m 
+
+
+    # Create a new window named debug
+    tmux new-window -d -n "debug" -t $SESSIONNAME
+
+    # Set the left pane to move into chat-application
+    tmux select-pane -t $SESSIONNAME:1.0
+    tmux send-keys -t $SESSIONNAME:1.0 "cd ~/Documents/chat-application" C-m 
+    # Split the window vertically
+    tmux split-window -h -t $SESSIONNAME:1
+
+    # Set the right pane to move into chat-client
+    tmux select-pane -t $SESSIONNAME:1.1
+    tmux send-keys -t $SESSIONNAME:1.1 "cd ~/Documents/chat-client" C-m 
+
+    # Create a new window named chat and start local LLM
+    tmux new-window -d -n "chat" -t $SESSIONNAME
+    tmux send-keys -t $SESSIONNAME:2.0 "ollama run ${LLM}" C-m 
+fi
+
+tmux attach -t $SESSIONNAME
+
